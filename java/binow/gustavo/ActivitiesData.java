@@ -5,6 +5,8 @@
  */
 package binow.gustavo;
 
+import java.text.SimpleDateFormat;
+
 /**
  *
  * @author binow
@@ -14,60 +16,22 @@ public class ActivitiesData {
     private final AnnotatedDocument document;
     private final DpProjectData dpProjectData;
     
-    private static final String[] STYLES = {
-        "ACTIVITYDESCRIPTION",
-        "COMPOSITEACTIVITY",
-        "CONCLUSION",
-        "DATAINI",
-        "DEPENDENCIES",
-        "DURATION",
-        "EAP",
-        "HR",
-        "PAPEL",
-        "PROJETO",
-        "REALDATEEND",
-        "REALDATESTART",
-        "REALDURATION",
-        "REALHR",
-        "SIMPLEACTIVITY"
-    };
     
     public ActivitiesData(DpProjectData dpProjectData) throws Exception {
         
-        document = new AnnotatedDocument(STYLES);
+        document = new AnnotatedDocument("planilha.ods");
         
         this.dpProjectData = dpProjectData;
-        
-        setDocumentProperties();
         
         fillDocument();
     }
  
-    private void setDocumentProperties(){
-        
-        document.setProperty("ACTIVITYDESCRIPTION", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#IdentityActivityProject,{content});");
-        document.setProperty("COMPOSITEACTIVITY", "[[completeText]];instance({content},http://localhost/ontologies/SE/gep.owl#CompositeProjectActivity,$activity);");
-        document.setProperty("CONCLUSION", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#ActivityProgressIndex,{content});");
-        document.setProperty("DATAINI", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#PlannedEndDateActivity,{content});");
-        document.setProperty("DEPENDENCIES", "[[break with ',' into 'var']];instance({slice},http://localhost/ontologies/SE/gep.owl#ProjectActivity,$activitylinha);property($activity,http://localhost/ontologies/SE/gep.owl#DependsOn,$activitylinha);");
-        document.setProperty("DURATION", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#PlannedDurationActivity,{content});");
-        document.setProperty("EAP", "[[break with ',' into 'var']];instance({slice},http://localhost/ontologies/SE/gep.owl#WorkPackage,$eapslinha);property($activity,http://localhost/ontologies/SE/gep.owl#isToProduceDeliverable,$eapslinha);");
-        document.setProperty("HR", "[[break with ',' into 'var']];instance({slice},http://localhost/ontologies/SE/gep.owl#HumanResource,$hrlinha);property($activity,http://localhost/ontologies/SE/gep.owl#Allocates,$hrlinha);");
-        document.setProperty("PAPEL", "[[completeText]];instance({content},http://localhost/ontologies/SE/gep.owl#HumanResourceAllocation,$papel);property($activity,http://localhost/ontologies/SE/gep.owl#IsToBePerformed,$papel);");
-        document.setProperty("PROJETO", "[[completeText]];instance({content},http://localhost/ontologies/SE/gep.owl#Project,$project);property($project,http://localhost/ontologies/SE/gep.owl#DescriptionProject,{content});");
-        document.setProperty("REALDATEEND", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#EndDateActivity,{content});");
-        document.setProperty("REALDATESTART", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#StartDateActivity,{content});");
-        document.setProperty("REALDURATION", "[[completeText]];property($activity,http://localhost/ontologies/SE/gep.owl#ActualDurationActivity,{content});");
-        document.setProperty("REALHR", "[[break with ',' into 'var']];instance({slice},http://localhost/ontologies/SE/gep.owl#HumanResourceParticipation,$rhrlinha);property($activity,http://localhost/ontologies/SE/gep.owl#ParticipationOfHR,$rhrlinha);");
-        document.setProperty("SIMPLEACTIVITY", "[[completeText]];instance({content},http://localhost/ontologies/SE/gep.owl#SimpleProjectActivity,$activity);");
-        document.setProperty("SemanticDocument", "True");
-    }
     
     private void fillDocument(){
         
-        document.setCell(0 , 0 , dpProjectData.getProject() , "PROJETO");
+        document.setCell(2 , 2 , dpProjectData.getProject() );
         
-        int row = 1;
+        int row = 8;
         for(Activity activity : dpProjectData.getActivities()){
             
             fillRow(row++ , activity);
@@ -80,17 +44,29 @@ public class ActivitiesData {
 
     private void fillRow(int row, Activity activity){
           
-        document
-            .setCell(row, 0, activity.getDescription(), "ACTIVITYDESCRIPTION")
-            .setCell(row, 1, activity.getPlannedStartDate(), "DATAINI")
-            .setCell(row, 2, activity.getPlannedEndDate())
-            .setCell(row, 3, activity.getPlannedDurationAsString(),"DURATION")
-            .setCell(row, 4, activity.getHrs(),"HR")
-            .setCell(row, 5, activity.getDescription(), "ACTIVITYDESCRIPTION")
-            .setCell(row, 6, activity.getStartDate(), "REALDATESTART")
-            .setCell(row, 7, activity.getEndDate(), "REALDATEEND")
-            .setCell(row, 8, activity.getDurationAsString(),"REALDURATION")
-            .setCell(row, 9, activity.getHrs(),"HR");
+        if(activity.isComposite()){
+            document.setCell(row, 0, activity.getId(), "COMPOSITEACTIVITY");
+            document.setCell(row, 1, activity.getDescription());
+            document.setCell(row, 2, "");
+        }else{
+            document.setCell(row, 0, activity.getId(), "SIMPLEACTIVITY");
+            document.setCell(row, 1, "");
+            document.setCell(row, 2, activity.getDescription());
+        }
+        
+        
+        document.setCell(row, 3, activity.getPlannedStartDate())
+            .setCell(row, 4, activity.getPlannedEndDate())
+            .setCell(row, 5, activity.getPlannedDurationAsDouble())
+            .setCell(row, 6, activity.getHrs())
+            .setCell(row, 7, "")
+            .setCell(row, 8, activity.getDependencies())
+            .setCell(row, 9, "")
+            .setCell(row, 10, activity.getStartDate())
+            .setCell(row, 11, activity.getEndDate())
+            .setCell(row, 12, activity.getDurationAsDouble())
+            .setCell(row, 13, activity.getHrs())
+            .setCell(row, 14, activity.getProgressAsDouble());
     }
     
     public void save(String name) {

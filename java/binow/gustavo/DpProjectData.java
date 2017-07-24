@@ -10,7 +10,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -64,17 +70,26 @@ public class DpProjectData {
     
     private Activity parseActivity(JSONObject activityJson){
         Activity activity = new Activity();
+        activity.setId(this.getString(activityJson,"id"));
         activity.setDescription(this.getString(activityJson,"description"));
         
-        activity.setPlannedStartDate(this.getString(activityJson,"plannedStartDate"));
-        activity.setPlannedEndDate(this.getString(activityJson,"plannedEndDate"));
+        activity.setPlannedStartDate(this.getDate(activityJson,"plannedStartDate"));
+        activity.setPlannedEndDate(this.getDate(activityJson,"plannedEndDate"));
         activity.setPlannedDuration(this.getInt(activityJson,"plannedDuration"));
         
-        activity.setHrs(this.getString(activityJson,"hrs"));
+        if(activityJson.has("hrs")){
+            JSONArray hrsJson = activityJson.getJSONArray("hrs");
+            activity.setHrs(hrsJson.join(", ").replaceAll("\"", ""));
+        }
+        if(activityJson.has("dependencies")){
+            JSONArray depsJson = activityJson.getJSONArray("dependencies");
+            activity.setDependencies(depsJson.join(", ").replaceAll("\"", ""));
+        }
         
-        activity.setStartDate(this.getString(activityJson,"startDate"));
-        activity.setEndDate(this.getString(activityJson,"endDate"));
+        activity.setStartDate(this.getDate(activityJson,"startDate"));
+        activity.setEndDate(this.getDate(activityJson,"endDate"));
         activity.setDuration(this.getInt(activityJson,"duration"));
+        activity.setProgress(this.getInt(activityJson,"progress"));
         
         
         
@@ -83,7 +98,7 @@ public class DpProjectData {
     
     private ArrayList<HR> parseHRs(JSONObject dpProjectData){
         
-        JSONArray hrsJson = dpProjectData.getJSONArray("costs");
+        JSONArray hrsJson = dpProjectData.getJSONArray("hrs");
         
         ArrayList<HR> hrs = new ArrayList<HR>();
         
@@ -114,6 +129,25 @@ public class DpProjectData {
             return json.getString(pos);
         
         return "";
+    }
+    
+    private Calendar getDate(JSONObject json , String pos){
+        
+        if( !json.has(pos) ) return null;
+        
+        String dateStr = getString(json, pos);
+        
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+        try {
+            cal.setTime(sdf.parse(dateStr));
+            return cal;
+        } catch (ParseException ex) {
+            Logger.getLogger(DpProjectData.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return null;
+
     }
     
     private int getInt(JSONObject json , String pos){

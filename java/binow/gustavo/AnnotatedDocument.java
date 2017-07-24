@@ -5,6 +5,7 @@
  */
 package binow.gustavo;
 
+import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.odftoolkit.odfdom.doc.OdfSpreadsheetDocument;
@@ -20,39 +21,19 @@ import org.odftoolkit.odfdom.incubator.meta.OdfOfficeMeta;
  */
 public class AnnotatedDocument {
 
-    private OdfSpreadsheetDocument document;
+    private final OdfSpreadsheetDocument document;
     
-    public AnnotatedDocument(String[] styles) throws Exception {
+    public AnnotatedDocument(String templatePath) throws Exception {
         
-        document = OdfSpreadsheetDocument.newSpreadsheetDocument();
+        document = OdfSpreadsheetDocument.loadDocument(templatePath);
         
-        for(String style : styles){
-            addStyle(style);
-        }
-        
-    }
- 
-    
-    private void addStyle(String style){
-        
-        OdfOfficeStyles styles = document.getOrCreateDocumentStyles();
-        
-        styles.newStyle ( "SemanticAnnotation-ref-" + style, OdfStyleFamily.TableCell );
-    }
-    
-    public AnnotatedDocument setProperty(String name, String value){
-        
-        OdfOfficeMeta meta = document.getOfficeMetadata();
-        
-        meta.setUserDefinedData(name, "String", value);
-        
-        return this;
     }
     
     public AnnotatedDocument setCell(int row, int col, String value){
         
        return setCell(row, col, value, null); 
     }
+    
     public AnnotatedDocument setCell(int row, int col, String value, String style){
         
         OdfTable table = document.getTableList().get(0);
@@ -61,8 +42,28 @@ public class AnnotatedDocument {
         cell.setStringValue(value);
         
         if(style != null){
-            cell.getOdfElement().setStyleName("SemanticAnnotation-ref-" + style);    
+            cell.getOdfElement().setStyleName("SemanticAnnotation-ref-" + style);        
         }
+        
+        return this;   
+    }
+    
+    public AnnotatedDocument setCell(int row, int col, Double value){
+        
+        OdfTable table = document.getTableList().get(0);
+        
+        OdfTableCell cell = table.getCellByPosition(col, row);
+        cell.setDoubleValue(value);
+        
+        
+        return this;   
+    }
+    
+    
+    public AnnotatedDocument setCell(int row, int col, Calendar value){
+        OdfTable table = document.getTableList().get(0);
+        OdfTableCell cell = table.getCellByPosition(col, row);
+        cell.setDateValue(value);
         
         return this;   
     }

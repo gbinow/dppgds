@@ -13,25 +13,22 @@ public class HRData {
      
     private final AnnotatedDocument document;
     private final DpProjectData dpProjectData;
-    
-    private static final String[] STYLES = {"hr001","hr002","Project"};
+    private int hrCount = 0;
     
     public HRData(DpProjectData dpProjectData) throws Exception {
         
-        document = new AnnotatedDocument(STYLES);
+        document = new AnnotatedDocument("rechumanos.ods");
         
         this.dpProjectData = dpProjectData;
-        
-        setDocumentProperties();
         
         fillDocument();
     }
  
     private void fillDocument(){
         
-        document.setCell(0 , 0 , dpProjectData.getProject() , "PROJETO");
+        document.setCell(3 , 1 , dpProjectData.getProject());
         
-        int row = 1;
+        int row = 9;
         for(HR hr : dpProjectData.getHrs()){
             fillRow(row++ , hr);
         }
@@ -40,16 +37,11 @@ public class HRData {
     private void fillRow(int row, HR hr){
           
         document
-            .setCell(row, 0, hr.getName(), "hr001")
-            .setCell(row, 1, hr.getCostAsString(), "hr002");
+            .setCell(row, 0, (double) ++hrCount)
+            .setCell(row, 0, hr.getName())
+            .setCell(row, 1, hr.getCost());
     }
  
-    private void setDocumentProperties(){
-        
-        document.setProperty("hr001", "[[completeText]];instance({content},http://localhost/ontologies/SE/gep.owl#HumanResource,$hr);");
-        document.setProperty("hr002", "[[completeText]];property($hr,http://localhost/ontologies/SE/gep.owl#CostHiring,{content});");
-    }
-    
     public void save(String name) {
         document.save(name);
     }

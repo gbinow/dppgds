@@ -6,6 +6,7 @@
 package binow.gustavo;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  *
@@ -13,19 +14,29 @@ import java.util.ArrayList;
  */
 public class Activity {
     
-    private String description, 
+    private String
+            id, 
+            description,
+            dependencies = "",
+            hrs = "";
+    
+    private Calendar
            plannedStartDate, 
            plannedEndDate, 
            startDate , 
-           endDate,
-           hrs;
+           endDate;
     
     private int plannedDuration, 
-        duration;
+        duration, 
+        progress;
     
     private Boolean composite = false;
     
-    private ArrayList<Activity> subactivities = new ArrayList<Activity>();
+    private final ArrayList<Activity> subactivities;
+
+    public Activity() {
+        this.subactivities = new ArrayList<Activity>();
+    }
 
     public ArrayList<Activity> getSubactivities() {
         return subactivities;
@@ -47,21 +58,6 @@ public class Activity {
         this.description = description;
     }
 
-    public String getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(String startDate) {
-        this.startDate = startDate;
-    }
-
-    public String getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(String endDate) {
-        this.endDate = endDate;
-    }
 
     public int getDuration() {
         return duration;
@@ -75,20 +71,20 @@ public class Activity {
         subactivities.add(activity);
     }
 
-    public String getPlannedStartDate() {
-        return plannedStartDate;
+    public String getId() {
+        return id;
     }
 
-    public void setPlannedStartDate(String plannedStartDate) {
-        this.plannedStartDate = plannedStartDate;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getPlannedEndDate() {
-        return plannedEndDate;
+    public String getDependencies() {
+        return dependencies;
     }
 
-    public void setPlannedEndDate(String plannedEndDate) {
-        this.plannedEndDate = plannedEndDate;
+    public void setDependencies(String dependencies) {
+        this.dependencies = dependencies;
     }
 
     public int getPlannedDuration() {
@@ -107,13 +103,58 @@ public class Activity {
         this.hrs = hrs;
     }
 
-    public String getPlannedDurationAsString() {
-        return plannedDuration != -1 ? String.valueOf(plannedDuration) : "";
+    public Double getPlannedDurationAsDouble() {
+        return (double) plannedDuration;
     }
 
-    String getDurationAsString() {
-        return duration != -1 ? String.valueOf(duration) : "";
+    public Double getDurationAsDouble() {
+        return (double) duration;
     }
+
+    public Double getProgressAsDouble() {
+        return (double) progress;
+    }
+    
+    public Calendar getPlannedStartDate() {
+        return plannedStartDate;
+    }
+
+    public void setPlannedStartDate(Calendar plannedStartDate) {
+        this.plannedStartDate = plannedStartDate;
+    }
+
+    public Calendar getPlannedEndDate() {
+        return plannedEndDate;
+    }
+
+    public void setPlannedEndDate(Calendar plannedEndDate) {
+        this.plannedEndDate = plannedEndDate;
+    }
+
+    public Calendar getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(Calendar startDate) {
+        this.startDate = startDate;
+    }
+
+    public Calendar getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Calendar endDate) {
+        this.endDate = endDate;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+    
     
     
     
