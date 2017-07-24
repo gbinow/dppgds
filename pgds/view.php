@@ -42,7 +42,7 @@ $q->addWhere('task_project = '.$project_id . ' AND task_parent = task_id');
 
 $tasks = $q->loadList();
 
-$df = $AppUI->getPref('SHDATEFORMAT').' ' . $AppUI->getPref('TIMEFORMAT');
+$df = $AppUI->getPref('SHDATEFORMAT');//.' ' . $AppUI->getPref('TIMEFORMAT');
 $durnTypes = dPgetSysVal('TaskDurationType');
 
 
@@ -51,11 +51,16 @@ $durnTypes = dPgetSysVal('TaskDurationType');
 <script src="modules/pgds/js/pgds.js"></script>
 
 
-<div style="text-align: center; margin-top: 20px">
-	<button ng-click="vm.exportCosts()" >Export data for PGDS</button>
-</div>
 
 <div ng-app="pgds" ng-controller="PgdsCtrl as vm" ng-cloak>
+
+	<div style="text-align: center; margin-top: 20px">
+		<button ng-click="vm.exportCosts()" ng-disabled="vm.exporting">
+			<span ng-if="!vm.exporting">Export data for PGDS</span>
+			<span ng-if="vm.exporting">Exporting...</span>
+		</button>
+	</div>
+
 	<form name="editFrm" action="" method="post">
 		<h3>Schedule</h3>
 		<table border="1" cellpadding="4" cellspacing="0" width="100%" class="std">
@@ -64,6 +69,7 @@ $durnTypes = dPgetSysVal('TaskDurationType');
 				<td><?php echo $AppUI->_('Task Id'); ?></td>
 				<td><?php echo $AppUI->_('Task Name'); ?></td>
 				<td><?php echo $AppUI->_('Subtask Name'); ?></td>
+				<td><?php echo $AppUI->_('Depend.'); ?></td>
 				<td><?php echo $AppUI->_('Planned Start Date'); ?></td>
 				<td><?php echo $AppUI->_('Planned End Date'); ?></td>
 				<td><?php echo $AppUI->_('Planned Duration'); ?></td>
@@ -71,8 +77,16 @@ $durnTypes = dPgetSysVal('TaskDurationType');
 				<td><?php echo $AppUI->_('Start Date'); ?></td>
 				<td><?php echo $AppUI->_('End Date'); ?></td>
 				<td><?php echo $AppUI->_('Duration'); ?></td>
+				<td><?php echo $AppUI->_('%'); ?></td>
 			</tr>
-			<?php foreach($tasks as &$_task){
+			
+			<?php 
+			$idsMap = array();
+			$currId = 1;
+			foreach($tasks as $incr => &$_task){
+
+				$idsMap[$_task['task_id']] = $currId++;
+
 				$q->clear();
 				$q->addTable('tasks');
 				$q->addQuery('*');
@@ -81,18 +95,21 @@ $durnTypes = dPgetSysVal('TaskDurationType');
 
 				$task = &$_task;
 				$isSubtask = false;
-				$parentTaskId = $taskId = $task['task_id'];
+				$parentTaskId = $taskId = $idsMap[$task['task_id']];
+				$task['id'] = (string)$taskId;
 				include 'vw_task_line.php';
-
-				$_task['subtasks'] = $subtasks;
 
 
 				$isSubtask = true;
 				foreach($subtasks as $i=>&$_subtask){
 					$task = &$_subtask;
 					$taskId = $parentTaskId . '.' . ($i+1);
+					$idsMap[$task['task_id']] = $taskId;
+					$task['id'] = (string)$taskId;
 					include 'vw_task_line.php';
 				}
+				
+				$_task['subtasks'] = $subtasks;
 			}
 			?>
 		</table>
@@ -124,7 +141,9 @@ $durnTypes = dPgetSysVal('TaskDurationType');
 					<td><?=$uc['user_id']?></td>
 					<td><?=$uc['contact_full_name']?></td>
 					<td>
-						<input type="text" ng-model="vm.costs[<?=$uc['user_id']?>]" ng-change="vm.updateHrCosts()">
+						<input type="text" 
+						ng-model="vm.costs[<?=$uc['user_id']?>]" 
+						ng-change="vm.updateHrCosts()">
 					</td>
 				</tr>
 			<?php }?>
@@ -134,7 +153,13 @@ $durnTypes = dPgetSysVal('TaskDurationType');
 	</form>
 
 	<div style="text-align: center; margin-top: 20px">
-		<button ng-click="vm.exportCosts()" >Export data for PGDS</button>
+		
+	
+		<button ng-click="vm.exportCosts()" ng-disabled="vm.exporting">
+			<span ng-if="!vm.exporting">Export data for PGDS</span>
+			<span ng-if="vm.exporting">Exporting...</span>
+		</button>
+	
 	</div>
 
 

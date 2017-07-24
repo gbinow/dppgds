@@ -13,6 +13,7 @@
         var taskList = $window.tasks;
 
 
+
         vm.costs = {};
 
         hrList.forEach(function(hr){
@@ -42,33 +43,37 @@
 
                 function assemblyTask(task){
                     return {
-                        hrs : task.hrs || '',
+                        id : task.id,
+                        hrs : task.hrs || [],
                         description : task.task_name,
-                        plannedStartDate : task.task_start_date,
-                        plannedEndDate : task.task_end_date,
+                        dependencies : task.dependencies || [],
+                        plannedStartDate : task.task_start_date.substr(0,10),
+                        plannedEndDate : task.task_end_date.substr(0,10),
                         plannedDuration : task.task_duration,
-                        startDate : task.realStartDate,
-                        endDate : task.realEndDate,
+                        startDate : task.realStartDate.substr(0,10),
+                        endDate : task.realEndDate.substr(0,10),
                         duration : task.realDuration,
+                        progress : task.task_percent_complete
                     };
                 }
             })
 
-            console.log(tasks);
-
             hrList.forEach(function(hr){
                 hrs.push({
-                    id : hr.user_id,
+                    // id : hr.user_id,
                     name : hr.contact_full_name,
                     cost : vm.costs[hr.user_id]
                 })
-                vm.costs[hr.user_id] = hr.cost || 0;
             });
 
+            vm.exporting = true;
             $http.post('/dotproject/modules/pgds/ajax/generate_hr_template.php' , {
                 project : projectName,
-                costs : hrs,
+                hrs : hrs,
                 activities : tasks
+            }).then(function(){
+                vm.exporting = false;
+                alert("Data was successfully exported")
             });
 
         }
